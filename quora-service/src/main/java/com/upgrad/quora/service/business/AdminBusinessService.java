@@ -4,29 +4,33 @@ import com.upgrad.quora.service.dao.UserDao;
 import com.upgrad.quora.service.entity.UserAuthTokenEntity;
 import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
+import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.ZonedDateTime;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AdminBusinessService {
 
     @Autowired
-    private UserDao userDao;
+    private CommonBussinessService commonBussinessService;
 
-    public UserEntity deleteUser(final String userid , final String accessToken) throws AuthorizationFailedException {
+    @Autowired
+    UserDao userDao;
+    @Transactional(propagation = Propagation.REQUIRED)
 
+    public String deleteUser(final String userid , final String accessToken) throws AuthorizationFailedException, UserNotFoundException {
+
+       UserEntity userEntity = commonBussinessService.getUser(userid,accessToken);
         UserAuthTokenEntity userAuthTokenEntity = userDao.checkToken(accessToken);
-        if(userAuthTokenEntity==null)
-        {
-            throw new AuthorizationFailedException("ATHR-001","User has not signed in");
-        }
-        final ZonedDateTime userSignedOutTime = userAuthTokenEntity.getLogoutAt();
-        if(userSignedOutTime!=null)
-        {
 
+        if(userAuthTokenEntity.getUser().getRole().equals("admin")){
+            return userDao.deleteUser(userid);
         }
-        return null;
+        else
+        {
+            throw new AuthorizationFailedException("ATHR-003","Unauthorized Access, Entered user is not an admin");
+        }
     }
 }
