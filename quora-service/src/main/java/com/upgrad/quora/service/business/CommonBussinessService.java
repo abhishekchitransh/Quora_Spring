@@ -7,6 +7,8 @@ import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 
@@ -15,10 +17,11 @@ public class CommonBussinessService {
 
     @Autowired
     private UserDao userDao;
-
+    @Transactional(propagation = Propagation.REQUIRED)
     public UserEntity getUser(final String id , final String authorizedToken) throws AuthorizationFailedException, UserNotFoundException {
 
         UserAuthTokenEntity userAuth =  userDao.checkToken(authorizedToken);
+
 
         if(userAuth == null)
         {
@@ -30,9 +33,9 @@ public class CommonBussinessService {
         {
             throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get user details");
         }
-        UserEntity user = userAuth.getUser();
+        UserEntity user = userDao.checkUuid(id);
 
-        if(id.equals(user.getUuid()))
+        if(user!=null)
         {
             return user;
         }
