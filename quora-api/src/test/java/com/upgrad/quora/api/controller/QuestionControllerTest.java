@@ -132,7 +132,7 @@ public class QuestionControllerTest {
     @Test
     public void getAllQuestionsByUserWithNonExistingAccessToken() throws Exception {
         mvc.perform(MockMvcRequestBuilders.get("/question/all/database_uuid1").header("authorization", "Bearer non_existing_access_token"))
-                .andExpect(status().isForbidden())
+                .andExpect(status().isNotFound())
                 .andExpect(MockMvcResultMatchers.jsonPath("code").value("ATHR-001"));
     }
 
@@ -140,7 +140,7 @@ public class QuestionControllerTest {
     @Test
     public void getAllQuestionsByUserWithSignedOutUser() throws Exception {
         mvc.perform(MockMvcRequestBuilders.get("/question/all/database_uuid1").header("authorization", "Bearer database_accesstoken3"))
-                .andExpect(status().isForbidden())
+                .andExpect(status().isNotFound())
                 .andExpect(MockMvcResultMatchers.jsonPath("code").value("ATHR-002"));
     }
 
@@ -151,7 +151,5 @@ public class QuestionControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(MockMvcResultMatchers.jsonPath("code").value("USR-001"));
     }
-
-
 }
 

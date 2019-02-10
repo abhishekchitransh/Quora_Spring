@@ -17,16 +17,14 @@ public class SignupBusinessService {
     private UserDao userDao;
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public UserEntity signup(UserEntity userEntity) throws SignUpRestrictedException {
+    public UserEntity signup(UserEntity userEntity) throws SignUpRestrictedException,SignUpConfictException {
         UserEntity checkedUsername=userDao.checkUserName(userEntity.getUserName());
         UserEntity checkedUseremail=userDao.checkUserEmail(userEntity.getEmail());
         if(checkedUsername!=null ){
-
-            throw new SignUpRestrictedException ("SGR-001","Try any other Username, this Username has already been taken. ");
-        }
+            throw new SignUpConfictException("SGR-001","Try any other Username, this Username has already been taken. "); //Dhruv
+        }  
         if(checkedUseremail!=null) {
-
-            throw new SignUpRestrictedException ("SGR-002","This user has already been registered, try with any other emailId. ");
+            throw new SignUpConfictException ("SGR-002","This user has already been registered, try with any other emailId. ");
         }
         String password = userEntity.getPassword();
         String[] encryptedText = cryptographyProvider.encrypt(userEntity.getPassword());

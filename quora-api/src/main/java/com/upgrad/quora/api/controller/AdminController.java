@@ -2,6 +2,7 @@ package com.upgrad.quora.api.controller;
 
 import com.upgrad.quora.api.model.UserDeleteResponse;
 import com.upgrad.quora.service.business.AdminBusinessService;
+import com.upgrad.quora.service.exception.AdminAuthorFailedException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ public class AdminController {
 
     @RequestMapping(method = RequestMethod.DELETE , path = "/admin/user/{userId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity <UserDeleteResponse> deleteUser(@PathVariable("userId") final String userid,
-                                                          @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, UserNotFoundException {
+                                                          @RequestHeader("authorization") final String authorization) throws AdminAuthorFailedException,AuthorizationFailedException, UserNotFoundException {
 
         String [] bearerToken = authorization.split("Bearer ");
 
