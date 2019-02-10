@@ -1,5 +1,7 @@
 package com.upgrad.quora.service.entity;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -12,7 +14,8 @@ import java.time.ZonedDateTime;
 @Table(name = "question")
 @NamedQueries(
         {       @NamedQuery(name = "getAllQuestions", query = "select qs from QuestionEntity qs"),
-                @NamedQuery(name = "questionByUuid", query = "select qs from QuestionEntity qs where qs.uuid = :uuid")
+                @NamedQuery(name = "questionByUuid", query = "select qs from QuestionEntity qs where qs.uuid = :uuid"),
+                @NamedQuery(name = "getAllQuestionByUUID", query = "select qs from QuestionEntity qs where qs.user.id = :user_id")
         }
 )
 

@@ -31,7 +31,7 @@ public class AnswerController {
     @Autowired
     private QuestionBusinessService questionBusinessService;
 
-    @RequestMapping(method = RequestMethod.POST,path = "/question/{questionId}/answer/create",produces = MediaType.APPLICATION_PROBLEM_JSON_UTF8_VALUE)
+    @RequestMapping(method = RequestMethod.POST,path = "/question/{questionId}/answer/create",consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_PROBLEM_JSON_UTF8_VALUE)
     public ResponseEntity<AnswerResponse> createAnswer(@PathVariable("questionId") final String questionId, @RequestHeader("authorization") final String authorization, AnswerRequest answerRequest) throws AuthorizationFailedException,InvalidQuestionException {
 
         String [] bearerToken = authorization.split("Bearer ");
@@ -50,7 +50,7 @@ public class AnswerController {
         return new ResponseEntity<AnswerResponse>(answerResponse,HttpStatus.CREATED);
     }
 
-    @RequestMapping(method = RequestMethod.PUT,path = "/answer/edit/{answerId}",produces = MediaType.APPLICATION_PROBLEM_JSON_UTF8_VALUE)
+    @RequestMapping(method = RequestMethod.PUT,path = "/answer/edit/{answerId}",consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_PROBLEM_JSON_UTF8_VALUE)
     public ResponseEntity<AnswerEditResponse> editAnswerContent(@PathVariable("answerId") final String answerId, @RequestHeader("authorization") final String authorization, AnswerEditRequest answerEditRequest) throws AuthorizationFailedException,AnswerNotFoundException {
         String [] bearerToken = authorization.split("Bearer ");
         UserAuthTokenEntity userAuthToken = answerBusinessService.getUserAuthToken(bearerToken[1]);

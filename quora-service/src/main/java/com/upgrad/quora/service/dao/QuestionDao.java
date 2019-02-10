@@ -67,4 +67,14 @@ public class QuestionDao {
             return null;
         }
     }
+
+    public List<QuestionEntity> getAllQuestionsByUUID(final Integer UserID){
+        try{
+           return entityManager.createNamedQuery("getAllQuestionByUUID", QuestionEntity.class).setParameter("user_id", UserID).getResultList();
+        } catch (NoResultException nre){
+            return null;
+        }
+    }
+
+
 }

@@ -70,6 +70,21 @@ public class QuestionController {
         return new ResponseEntity<List<QuestionDetailsResponse>>(questions,HttpStatus.OK);
     }
 
+    @RequestMapping(method = RequestMethod.GET, path="question/all/{userId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<List<QuestionDetailsResponse>> getAllQuestionsByUserID(@PathVariable("userId") final String userUUID, @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, UserNotFoundException {
+        String [] bearerToken = authorization.split("Bearer ");
+
+        List<QuestionEntity> QB = questionBusinessService.getAllQuestionsByUUUID(userUUID, bearerToken[1]);
+
+        List<QuestionDetailsResponse> questions = new ArrayList<>();
+
+        for(QuestionEntity questionEntity : QB){
+            QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse().id(questionEntity.getUuid()).content(questionEntity.getContent());
+            questions.add(questionDetailsResponse);
+        }
+
+        return new ResponseEntity<List<QuestionDetailsResponse>>(questions,HttpStatus.OK);
+    }
 
     @RequestMapping(method = RequestMethod.DELETE, path="question/delete/{questionId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<QuestionDeleteResponse> deleteQuestion(@PathVariable("questionId") final String questionUUID, @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, InvalidQuestionException
