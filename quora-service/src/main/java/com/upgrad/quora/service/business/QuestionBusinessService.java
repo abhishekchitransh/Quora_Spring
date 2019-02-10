@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 
 @Service
@@ -24,8 +25,8 @@ public class QuestionBusinessService {
     UserDao userDao;
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public QuestionEntity createQuestion(QuestionEntity questionEntity, final String authorizaionToken) throws AuthorizationFailedException {
-        UserAuthTokenEntity userAuth =  userDao.checkToken(authorizaionToken);
+    public QuestionEntity createQuestion(QuestionEntity questionEntity, final String authorizationToken) throws AuthorizationFailedException {
+        UserAuthTokenEntity userAuth =  questionDao.getUserAuthToken(authorizationToken);
 
 
         if(userAuth == null)
@@ -44,11 +45,97 @@ public class QuestionBusinessService {
 
     }
 
-    public QuestionEntity getQuestionByUUID(final String questionUUID) throws InvalidQuestionException {
-        QuestionEntity questionEntity = questionDao.getQuestionByUUID(questionUUID);
-        if(questionEntity == null){
-            throw new InvalidQuestionException("QUES-001","The question entered is invalid");
+
+    public QuestionEntity editQuestionByUUID(final String questionUUID, final String questionContent , final String authorizationToken) throws AuthorizationFailedException, InvalidQuestionException {
+        UserAuthTokenEntity userAuthEdit =  questionDao.getUserAuthToken(authorizationToken);
+
+        if(userAuthEdit == null)
+        {
+            throw new AuthorizationFailedException("ATHR-001","User has not signed in");
         }
-        return questionEntity;
+        final ZonedDateTime signOutUserTime = userAuthEdit.getLogoutAt();
+
+        if(signOutUserTime!=null && userAuthEdit != null)
+        {
+            throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get user details");
+        }
+
+        QuestionEntity editQuestionEntity = questionDao.getQuestionByUUID(questionUUID);
+
+        if(editQuestionEntity == null){
+            throw new InvalidQuestionException("QUES-001","Entered question uuid does not exist");
+        }
+
+        if(!userAuthEdit.getUser().getId().equals(editQuestionEntity.getUser_id().getId())){
+            throw new AuthorizationFailedException("ATHR-003", "Only the question owner can edit the question");
+        }
+
+        editQuestionEntity.setContent(questionContent);
+
+        return questionDao.editQuestion(editQuestionEntity);
+    }
+
+
+    public List<QuestionEntity> getAllQuestions(final String authorizationToken) throws AuthorizationFailedException{
+        final UserAuthTokenEntity userAuthAll =  questionDao.getUserAuthToken(authorizationToken);
+
+        if(userAuthAll == null)
+        {
+            throw new AuthorizationFailedException("ATHR-001","User has not signed in");
+        }
+        final ZonedDateTime signOutUserTime = userAuthAll.getLogoutAt();
+
+        if(signOutUserTime!=null && userAuthAll != null)
+        {
+            throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get all questions");
+        }
+
+        return questionDao.getAllQuestions();
+
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public String deleteQuestionByUuId(final String questionUUID, final String authorizationToken) throws AuthorizationFailedException, InvalidQuestionException {
+        UserAuthTokenEntity userAuthDel =  questionDao.getUserAuthToken(authorizationToken);
+
+        if(userAuthDel == null)
+        {
+            throw new AuthorizationFailedException("ATHR-001","User has not signed in");
+        }
+        final ZonedDateTime signOutUserTime = userAuthDel.getLogoutAt();
+
+        if(signOutUserTime!=null && userAuthDel != null)
+        {
+            throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get user details");
+        }
+
+        QuestionEntity deleteQuestionEntity = questionDao.getQuestionByUUID(questionUUID);
+
+        if(deleteQuestionEntity == null){
+            throw new InvalidQuestionException("QUES-001","Entered question uuid does not exist");
+        }
+
+        if(userAuthDel.getId().equals(deleteQuestionEntity.getUser_id()) || userAuthDel.getUser().getRole().equals("admin")) {
+            return questionDao.deleteQuestion(questionUUID);
+        }else{
+            throw new AuthorizationFailedException("ATHR-003", "Only the question owner or admin can delete the question");
+        }
+
+    }
+
+    public UserAuthTokenEntity getUserAuthToken(final String accesstoken) throws AuthorizationFailedException{
+        UserAuthTokenEntity userAuthToken = questionDao.getUserAuthToken(accesstoken);
+        if(userAuthToken == null)
+        {
+            throw new AuthorizationFailedException("ATHR-001","User has not signed in");
+        }
+        final ZonedDateTime signOutUserTime = userAuthToken.getLogoutAt();
+
+        if(signOutUserTime!=null && userAuthToken!=null)
+        {
+            throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get user details");
+        }
+
+        return userAuthToken;
     }
 }
