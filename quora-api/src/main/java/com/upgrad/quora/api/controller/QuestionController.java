@@ -5,6 +5,7 @@ import com.upgrad.quora.service.business.QuestionBusinessService;
 import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
+import com.upgrad.quora.service.exception.QuestAuthorFailedException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -55,7 +56,8 @@ public class QuestionController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path="question/all", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<List<QuestionDetailsResponse>> getAllQuestions(@RequestHeader("authorization") final String authorization) throws AuthorizationFailedException,InvalidQuestionException {
+    public ResponseEntity<List<QuestionDetailsResponse>> getAllQuestions(@RequestHeader("authorization") final String authorization)
+            throws AuthorizationFailedException,InvalidQuestionException {
         String [] bearerToken = authorization.split("Bearer ");
 
         List<QuestionEntity> QB = questionBusinessService.getAllQuestions(bearerToken[1]);
@@ -71,7 +73,8 @@ public class QuestionController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path="question/all/{userId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<List<QuestionDetailsResponse>> getAllQuestionsByUserID(@PathVariable("userId") final String userUUID, @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, UserNotFoundException {
+    public ResponseEntity<List<QuestionDetailsResponse>> getAllQuestionsByUserID(@PathVariable("userId") final String userUUID, @RequestHeader("authorization") final String authorization)
+            throws QuestAuthorFailedException,UserNotFoundException {
         String [] bearerToken = authorization.split("Bearer ");
 
         List<QuestionEntity> QB = questionBusinessService.getAllQuestionsByUUUID(userUUID, bearerToken[1]);
@@ -86,7 +89,7 @@ public class QuestionController {
         return new ResponseEntity<List<QuestionDetailsResponse>>(questions,HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.DELETE, path="question/delete/{questionId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(method = RequestMethod.DELETE, path="question/delete/{questionId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<QuestionDeleteResponse> deleteQuestion(@PathVariable("questionId") final String questionUUID, @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, InvalidQuestionException
     {
         String [] bearerToken = authorization.split("Bearer ");
