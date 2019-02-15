@@ -7,6 +7,7 @@ import com.upgrad.quora.service.entity.UserAuthTokenEntity;
 import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
+import com.upgrad.quora.service.exception.QuestAuthorFailedException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -100,6 +101,12 @@ public class QuestionBusinessService {
     public String deleteQuestionByUuId(final String questionUUID, final String authorizationToken) throws AuthorizationFailedException, InvalidQuestionException {
         UserAuthTokenEntity userAuthDel =  questionDao.getUserAuthToken(authorizationToken);
 
+        QuestionEntity deleteQuestionEntity = questionDao.getQuestionByUUID(questionUUID);
+
+        if(deleteQuestionEntity == null){
+            throw new InvalidQuestionException("QUES-001","Entered question uuid does not exist");
+        }
+
         if(userAuthDel == null)
         {
             throw new AuthorizationFailedException("ATHR-001","User has not signed in");
@@ -111,11 +118,6 @@ public class QuestionBusinessService {
             throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get user details");
         }
 
-        QuestionEntity deleteQuestionEntity = questionDao.getQuestionByUUID(questionUUID);
-
-        if(deleteQuestionEntity == null){
-            throw new InvalidQuestionException("QUES-001","Entered question uuid does not exist");
-        }
 
         if(userAuthDel.getId().equals(deleteQuestionEntity.getUser_id()) || userAuthDel.getUser().getRole().equals("admin")) {
             return questionDao.deleteQuestion(questionUUID);
@@ -133,19 +135,20 @@ public class QuestionBusinessService {
         return questionEntity;
     }
 
-    public List<QuestionEntity> getAllQuestionsByUUUID(final String userUUID, final String authorizationToken) throws AuthorizationFailedException, UserNotFoundException {
+    public List<QuestionEntity> getAllQuestionsByUUUID(final String userUUID, final String authorizationToken)
+            throws UserNotFoundException,QuestAuthorFailedException {
         final UserAuthTokenEntity userAuthQues =  questionDao.getUserAuthToken(authorizationToken);
         final UserEntity userEntity = userDao.checkUuid(userUUID);
 
         if(userAuthQues == null)
         {
-            throw new AuthorizationFailedException("ATHR-001","User has not signed in");
+            throw new QuestAuthorFailedException("ATHR-001","User has not signed in");
         }
         final ZonedDateTime signOutUserTime = userAuthQues.getLogoutAt();
 
         if(signOutUserTime!=null && userAuthQues != null)
         {
-            throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get all questions posted by a specific user");
+            throw new QuestAuthorFailedException("ATHR-002","User is signed out.Sign in first to get all questions posted by a specific user");
         }
 
         if(userEntity == null){
