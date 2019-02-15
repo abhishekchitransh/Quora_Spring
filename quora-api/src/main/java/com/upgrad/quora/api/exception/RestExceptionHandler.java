@@ -71,4 +71,12 @@ public class RestExceptionHandler extends Exception{
                 new ErrorResponse().code(exe.getCode()).message(exe.getErrorMessage()), HttpStatus.NOT_FOUND
         );
     }
+
+    @ExceptionHandler(QuestAuthorFailedException.class)
+    public ResponseEntity<ErrorResponse> questAuthorFailedException(QuestAuthorFailedException exe , WebRequest request) {
+        return new ResponseEntity<ErrorResponse>(
+                new ErrorResponse().code(exe.getCode()).message(exe.getErrorMessage()), HttpStatus.NOT_FOUND
+        );
+    }
+
 }
